@@ -1605,7 +1605,11 @@ function generatePDF(){
     doc.text('Pre-Reading Character Bracket',PW/2,27,{align:'center'});
     doc.setFont('times','normal');doc.setFontSize(10);doc.setTextColor(160,140,100);
     var ds=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-    doc.text(state.name+'   ·   '+ds,PW/2,36,{align:'center'});
+    var pdfElapsed=totalTimeElapsed||0;
+    var pdfMin=Math.floor(pdfElapsed/60),pdfSec=pdfElapsed%60;
+    var pdfTimeStr=pdfElapsed>0?(pdfMin>0?pdfMin+' min '+(pdfSec>0?pdfSec+' sec':''):pdfSec+' sec'):'';
+    var headerLine=state.name+'   ·   '+ds+(pdfTimeStr?'   ·   '+pdfTimeStr:'');
+    doc.text(headerLine,PW/2,36,{align:'center'});
     y=56;
 
     function secHdr(title,r,g,b){
