@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romeo &amp; Juliet — Character Bracket</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   RESET & VARIABLES
+═══════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --vellum:#EDE0C4;
+  --vellum-lt:#F5EDDA;
+  --vellum-dk:#DDD0A8;
+  --card:#FAF4E4;
+  --card-inner:rgba(250,244,228,.97);
+  --blood:#6B1010;
+  --blood-lt:#9B2020;
+  --midnight:#0D1B3E;
+  --midnight-lt:#1E3460;
+  --gold:#7A5400;
+  --gold-lt:#A07820;
+  --gold-bright:#C5963A;
+  --ink:#150800;
+  --ink-mid:#3A2010;
+  --ink-lt:#7A5C2E;
+  --border:#B89A54;
+  --border-lt:#D4BA80;
+  --shadow:rgba(21,8,0,.18);
+}
+
+body{
+  min-height:100vh;
+  font-family:'Lora',Georgia,serif;
+  color:var(--ink);
+  padding:20px 16px 60px;
+  background:var(--vellum);
+  position:relative;overflow-x:hidden;
+}
+
+/* ═══ PARCHMENT BG ═══ */
+.bg-layer{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 0% 0%,rgba(107,16,16,.09) 0%,transparent 45%),
+    radial-gradient(ellipse at 100% 100%,rgba(13,27,62,.07) 0%,transparent 45%),
+    radial-gradient(ellipse at 50% 50%,rgba(122,84,0,.04) 0%,transparent 60%),
+    linear-gradient(170deg,#F0E6C8 0%,#E8D8AA 35%,#EDE0C4 65%,#E0D0A0 100%);
+}
+/* Horizontal ruling lines — aged paper look */
+.bg-layer::before{
+  content:'';position:absolute;inset:0;
+  background-image:repeating-linear-gradient(
+    0deg,transparent,transparent 31px,
+    rgba(122,84,0,.04) 31px,rgba(122,84,0,.04) 32px
+  );
+}
+/* Vignette burn at edges */
+.bg-layer::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(21,8,0,.12) 100%);
+}
+
+/* ═══ FLOATING ORNAMENTS ═══ */
+.bg-orn{
+  position:fixed;pointer-events:none;z-index:0;
+  font-family:'Cinzel',serif;
+  color:var(--blood);opacity:.06;
+  line-height:1;
+  animation:sway var(--sd,20s) ease-in-out infinite alternate;
+  user-select:none;
+}
+@keyframes sway{
+  0%{transform:rotate(var(--r1,-3deg)) scale(1);}
+  100%{transform:rotate(var(--r2,3deg)) scale(1.04);}
+}
+
+/* ═══ TIMER ═══ */
+#timer-wrap{
+  position:fixed;top:12px;right:12px;z-index:200;
+  display:none;
+}
+.timer-box{
+  background:var(--card);
+  border:2px solid var(--gold);
+  border-radius:6px;
+  padding:8px 14px 10px;
+  text-align:center;
+  min-width:76px;
+  box-shadow:0 3px 20px var(--shadow),inset 0 1px 0 rgba(255,255,230,.5);
+  transition:border-color .3s,box-shadow .3s;
+  position:relative;
+}
+.timer-box::before,.timer-box::after{
+  content:'';position:absolute;
+  border:1px solid rgba(107,16,16,.15);
+  border-radius:4px;
+  inset:4px;
+  pointer-events:none;
+}
+.timer-box.urgent{border-color:var(--blood);box-shadow:0 3px 20px rgba(107,16,16,.3),0 0 0 3px rgba(107,16,16,.1);}
+.t-label{font-family:'Cinzel',serif;font-size:8px;color:var(--ink-lt);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+.t-num{font-family:'Cinzel Decorative',serif;font-size:32px;font-weight:700;color:var(--ink);line-height:1;}
+.timer-box.urgent .t-num{color:var(--blood);}
+.t-sub{font-family:'Lora',serif;font-size:10px;color:var(--ink-lt);margin-top:2px;}
+
+/* ═══ LAYOUT ═══ */
+#app{position:relative;z-index:1;}
+.container{max-width:600px;margin:0 auto;}
+.container-md{max-width:660px;margin:0 auto;}
+
+/* ═══ TITLE BLOCK ═══ */
+.title-block{text-align:center;margin-bottom:24px;position:relative;}
+.title-eyebrow{font-family:'Cinzel',serif;font-size:9px;color:var(--blood);letter-spacing:5px;text-transform:uppercase;margin-bottom:6px;}
+.title-main{font-family:'Cinzel Decorative',serif;font-size:32px;font-weight:700;color:var(--ink);line-height:1.1;}
+.title-sub{font-family:'Lora',serif;font-size:15px;font-weight:500;color:var(--ink-mid);margin-top:3px;}
+.title-rule{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:8px;}
+.title-rule-line{flex:1;max-width:60px;height:1px;background:var(--gold-lt);}
+.title-rule-orn{font-size:14px;color:var(--gold-lt);}
+
+/* ═══ CARD ═══ */
+.card{
+  background:var(--card-inner);
+  border-radius:4px;
+  padding:30px 26px;
+  border:1px solid var(--border);
+  box-shadow:0 6px 40px var(--shadow),0 1px 4px rgba(21,8,0,.08),inset 0 1px 0 rgba(255,255,230,.6);
+  max-width:600px;margin:0 auto;
+  position:relative;
+}
+/* Double inset border */
+.card::before{
+  content:'';position:absolute;inset:5px;
+  border:1px solid rgba(107,16,16,.12);
+  border-radius:2px;pointer-events:none;
+}
+/* Corner flourish */
+.card .corner{
+  position:absolute;font-family:'Cinzel',serif;
+  font-size:11px;color:rgba(107,16,16,.2);pointer-events:none;
+}
+.card .corner-tl{top:10px;left:12px;}
+.card .corner-tr{top:10px;right:12px;}
+.card .corner-bl{bottom:10px;left:12px;}
+.card .corner-br{bottom:10px;right:12px;}
+
+/* ═══ CHARACTER PROGRESS TRACK ═══ */
+.char-track{
+  display:flex;align-items:flex-start;justify-content:center;
+  gap:2px;margin:0 auto 24px;
+  max-width:580px;
+  position:relative;
+}
+.char-track::before{
+  content:'';position:absolute;
+  top:14px;left:14px;right:14px;height:2px;
+  background:var(--border-lt);z-index:0;
+}
+.char-node{
+  display:flex;flex-direction:column;align-items:center;
+  flex:1;position:relative;z-index:1;cursor:default;
+}
+.char-node-dot{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--border-lt);
+  background:var(--vellum);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:9px;font-weight:700;
+  color:var(--ink-lt);
+  transition:all .3s;
+  margin-bottom:4px;
+  position:relative;
+}
+.char-node.done .char-node-dot{
+  background:var(--blood);border-color:var(--blood);
+  color:#FDF5E6;
+}
+.char-node.active .char-node-dot{
+  background:var(--gold);border-color:var(--gold);
+  color:#FDF5E6;
+  box-shadow:0 0 0 4px rgba(122,84,0,.2);
+  animation:nodePulse 1.8s ease-in-out infinite;
+}
+@keyframes nodePulse{
+  0%,100%{box-shadow:0 0 0 3px rgba(122,84,0,.2);}
+  50%{box-shadow:0 0 0 6px rgba(122,84,0,.1);}
+}
+.char-node-label{
+  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.3px;
+  color:var(--ink-lt);text-align:center;max-width:40px;
+  line-height:1.3;text-transform:uppercase;
+  transition:color .3s;
+}
+.char-node.done .char-node-label{color:var(--blood);}
+.char-node.active .char-node-label{color:var(--gold);font-weight:700;}
+
+/* ═══ BADGE ═══ */
+.badge{
+  display:inline-block;font-family:'Cinzel',serif;
+  font-size:9px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;padding:3px 10px;
+  border-radius:2px;border:1px solid;
+}
+.badge-m{background:#E0E8F2;color:var(--midnight);border-color:#B8CADE;}
+.badge-f{background:#F5E0E0;color:var(--blood);border-color:#E0B0B0;}
+
+/* ═══ TRAITS ═══ */
+.trait-tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 20px;}
+.trait-tag{
+  display:inline-block;padding:4px 11px;
+  font-family:'Cinzel',serif;font-size:10px;
+  font-weight:600;letter-spacing:.5px;
+  border:1px solid;border-radius:2px;
+}
+.trait-m{background:#EEF3FA;border-color:#B8CADE;color:var(--midnight);}
+.trait-f{background:#FDF0F0;border-color:#E8C0C0;color:var(--blood);}
+
+/* ═══ CHARACTER NAME ═══ */
+.char-name{
+  font-family:'Cinzel',serif;font-size:24px;
+  margin:0 0 4px;font-weight:700;letter-spacing:.5px;
+}
+.name-m{color:var(--midnight);}
+.name-f{color:var(--blood);}
+
+/* ═══ BULLETS ═══ */
+.bullet{font-size:14px;line-height:1.8;color:var(--ink-mid);margin:7px 0;padding-left:2px;}
+.b-dot{color:var(--blood);margin-right:8px;font-size:11px;}
+
+/* ═══ INPUTS ═══ */
+.text-input{
+  width:100%;padding:12px 15px;font-size:15px;
+  border:1px solid var(--border);
+  border-radius:3px;
+  background:rgba(250,244,228,.9);color:var(--ink);
+  outline:none;font-family:'Lora',Georgia,serif;
+  transition:border-color .2s,box-shadow .2s;
+  box-shadow:inset 0 1px 4px rgba(21,8,0,.06);
+}
+.text-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(122,84,0,.1),inset 0 1px 4px rgba(21,8,0,.06);}
+
+select.sel-input{
+  width:100%;padding:9px 13px;font-size:14px;
+  border:1px solid var(--border);border-radius:3px;
+  background:rgba(250,244,228,.9);color:var(--ink);
+  font-family:'Lora',Georgia,serif;
+  outline:none;cursor:pointer;
+  transition:border-color .2s;
+}
+select.sel-input:focus{border-color:var(--gold);}
+
+/* ═══ BUTTONS ═══ */
+.btn-main{
+  width:100%;padding:13px;font-size:15px;font-weight:600;
+  background:linear-gradient(170deg,var(--blood) 0%,#8B1818 100%);
+  color:#FDF5E6;border:none;border-radius:3px;
+  cursor:pointer;font-family:'Cinzel',serif;
+  letter-spacing:2px;text-transform:uppercase;font-size:11px;
+  transition:all .2s;
+  box-shadow:0 2px 10px rgba(107,16,16,.3),0 1px 0 rgba(255,255,230,.1) inset;
+  position:relative;overflow:hidden;
+}
+.btn-main::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(255,255,255,.06),transparent);
+  pointer-events:none;
+}
+.btn-main:disabled{
+  background:linear-gradient(170deg,#9A8A70,#B0A080);
+  cursor:default;box-shadow:none;opacity:.7;
+}
+.btn-main:not(:disabled):hover{
+  transform:translateY(-1px);
+  box-shadow:0 5px 18px rgba(107,16,16,.4);
+}
+.btn-main:not(:disabled):active{transform:translateY(0);}
+
+.btn-navy{
+  background:linear-gradient(170deg,var(--midnight) 0%,#162A50 100%);
+  box-shadow:0 2px 10px rgba(13,27,62,.3),0 1px 0 rgba(255,255,230,.1) inset;
+}
+.btn-navy:not(:disabled):hover{box-shadow:0 5px 18px rgba(13,27,62,.4);}
+
+.btn-gold-style{
+  background:linear-gradient(170deg,var(--gold) 0%,#9A6A10 100%);
+  box-shadow:0 2px 10px rgba(122,84,0,.3);
+}
+.btn-gold-style:not(:disabled):hover{box-shadow:0 5px 18px rgba(122,84,0,.4);}
+
+.btn-option{
+  padding:12px 16px;font-size:14px;
+  border:1px solid var(--border-lt);border-radius:3px;
+  cursor:pointer;text-align:left;width:100%;
+  background:rgba(250,244,228,.92);color:var(--ink);
+  font-family:'Lora',Georgia,serif;
+  transition:all .15s;margin-bottom:9px;line-height:1.5;
+  box-shadow:0 1px 3px rgba(21,8,0,.05);
+}
+.btn-option:hover:not(:disabled){
+  border-color:var(--blood);background:#FDF0F0;
+  transform:translateX(6px);
+  box-shadow:0 2px 8px rgba(107,16,16,.12);
+}
+.btn-option.yours{border-color:var(--gold-lt);background:#FAF4E0;}
+.btn-option:disabled{opacity:.4;cursor:default;transform:none;}
+
+.btn-outline{
+  padding:9px 22px;font-size:10px;
+  font-family:'Cinzel',serif;letter-spacing:1.5px;text-transform:uppercase;
+  background:transparent;color:var(--ink-lt);
+  border:1px solid var(--border-lt);border-radius:3px;
+  cursor:pointer;transition:all .2s;
+}
+.btn-outline:hover{border-color:var(--blood);color:var(--blood);}
+
+/* ═══ GUESS REMINDER ═══ */
+.guess-box{
+  background:#F8F2E0;border-radius:3px;
+  padding:10px 14px;margin-bottom:16px;
+  font-size:13px;color:var(--ink-mid);
+  border:1px solid var(--border-lt);
+  border-left:3px solid var(--gold-lt);
+}
+.guess-box strong{color:var(--gold);}
+
+/* ═══ PROGRESS BAR (kept for phase overview) ═══ */
+.phase-banner{
+  display:flex;justify-content:center;gap:0;
+  max-width:520px;margin:0 auto 20px;
+  border:1px solid var(--border-lt);border-radius:3px;overflow:hidden;
+}
+.phase-seg{
+  flex:1;padding:6px 4px;text-align:center;
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--ink-lt);
+  background:var(--vellum);transition:all .3s;
+  border-right:1px solid var(--border-lt);
+}
+.phase-seg:last-child{border-right:none;}
+.phase-seg.active{background:var(--blood);color:#FDF5E6;}
+.phase-seg.done{background:rgba(107,16,16,.12);color:var(--blood);}
+
+/* ═══ SUMMARY ═══ */
+.sum-sec{margin-bottom:24px;}
+.sum-head{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;font-weight:700;
+  margin-bottom:10px;padding-bottom:6px;
+  border-bottom:2px solid;
+}
+.sum-head-c{color:var(--blood);border-color:var(--blood);}
+.sum-head-n{color:var(--midnight);border-color:var(--midnight);}
+.sum-head-g{color:var(--gold);border-color:var(--gold);}
+.sum-head-p{color:#5A1A5A;border-color:#5A1A5A;}
+.sum-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:6px 0;border-bottom:1px solid var(--border-lt);gap:10px;
+}
+.sum-row .sn{font-family:'Cinzel',serif;font-weight:600;font-size:11px;flex-shrink:0;color:var(--ink);}
+.sum-row .sv{font-size:12px;color:var(--ink-mid);text-align:right;font-weight:500;flex:1;}
+
+/* ═══ SCENARIO SPINNER ═══ */
+.scenario-box{
+  background:linear-gradient(135deg,rgba(13,27,62,.06),rgba(107,16,16,.06));
+  border:1px solid var(--border);border-radius:4px;
+  padding:16px 20px;margin-bottom:18px;
+  position:relative;overflow:hidden;
+}
+.scenario-box::before{
+  content:'✦';position:absolute;top:8px;right:12px;
+  font-size:18px;color:rgba(122,84,0,.15);pointer-events:none;
+}
+.scenario-text{
+  font-size:15px;line-height:1.75;color:var(--ink);
+  font-weight:500;min-height:50px;
+  transition:opacity .2s;
+}
+.scenario-label{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--ink-lt);margin-bottom:8px;
+}
+
+/* ═══ CHAT UI ═══ */
+.chat-window{
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23F5EDDA'/%3E%3Crect x='0' y='0' width='1' height='1' fill='rgba(122,84,0,.04)'/%3E%3C/svg%3E");
+  border:1px solid var(--border);border-radius:4px;
+  padding:16px;min-height:240px;max-height:400px;
+  overflow-y:auto;margin-bottom:12px;
+}
+.chat-empty{text-align:center;padding:40px 0;font-size:13px;color:var(--ink-lt);font-weight:500;}
+
+/* ═══ PIPS ═══ */
+.pip-row{display:flex;gap:4px;align-items:center;justify-content:center;margin-bottom:12px;}
+.pip{
+  height:6px;border-radius:3px;
+  transition:all .3s;
+}
+.pip-done-l{background:var(--blood);width:22px;}
+.pip-done-r{background:var(--midnight);width:22px;}
+.pip-empty{background:var(--border-lt);width:18px;}
+
+/* ═══ TURN INDICATOR ═══ */
+.turn-box{
+  border-radius:3px;padding:10px 14px;margin-bottom:10px;
+  border:1px solid;
+}
+.turn-box-l{background:#FDF0F0;border-color:rgba(107,16,16,.25);}
+.turn-box-r{background:#EEF3FA;border-color:rgba(13,27,62,.2);}
+.turn-label{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:6px;
+}
+
+/* ═══ CHAT TIMER BAR ═══ */
+.chat-timer-bar-wrap{height:4px;background:var(--border-lt);border-radius:2px;margin-bottom:12px;overflow:hidden;}
+.chat-timer-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold-bright));transition:width 1s linear;}
+
+/* ═══ SEND ROW ═══ */
+.send-row{display:flex;gap:8px;}
+.send-input{
+  flex:1;padding:10px 14px;font-size:14px;
+  border:1px solid var(--border);border-radius:3px;
+  background:rgba(250,244,228,.9);color:var(--ink);
+  font-family:'Lora',Georgia,serif;
+  outline:none;
+  box-shadow:inset 0 1px 4px rgba(21,8,0,.06);
+  transition:border-color .2s;
+}
+.send-input:focus{border-color:var(--gold);}
+.send-btn{
+  padding:10px 16px;border:none;border-radius:3px;
+  cursor:pointer;font-family:'Cinzel',serif;
+  font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  color:#FDF5E6;transition:all .15s;white-space:nowrap;
+}
+.send-btn-l{background:var(--blood);}
+.send-btn-r{background:var(--midnight);}
+.send-btn:hover{filter:brightness(1.15);transform:translateY(-1px);}
+.send-btn:disabled{opacity:.5;cursor:default;transform:none;filter:none;}
+
+/* ═══ MODAL OVERLAY ═══ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(21,8,0,.72);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  animation:fadeIn .25s ease;
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal-box{
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:4px;
+  padding:36px 32px;
+  max-width:480px;width:100%;
+  position:relative;
+  box-shadow:0 12px 60px rgba(21,8,0,.5),inset 0 1px 0 rgba(255,255,230,.5);
+}
+.modal-box::before{
+  content:'';position:absolute;inset:6px;
+  border:1px solid rgba(107,16,16,.15);
+  border-radius:2px;pointer-events:none;
+}
+.modal-check-row{
+  display:flex;align-items:flex-start;gap:12px;
+  background:rgba(107,16,16,.05);
+  border:1px solid rgba(107,16,16,.18);
+  border-radius:3px;padding:14px;
+  margin:20px 0;cursor:pointer;
+}
+.modal-check-row input[type=checkbox]{
+  width:18px;height:18px;flex-shrink:0;
+  accent-color:var(--blood);cursor:pointer;margin-top:2px;
+}
+.modal-check-label{
+  font-size:13px;line-height:1.75;color:var(--ink-mid);cursor:pointer;
+}
+
+
+.fade{transition:opacity .22s ease;}
+.fade-out{opacity:0;}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--vellum-dk);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--gold-lt);}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<!-- Floating background ornaments -->
+<div class="bg-orn" style="top:3%;left:1%;font-size:140px;--r1:-6deg;--r2:4deg;--sd:24s;">⚔</div>
+<div class="bg-orn" style="top:5%;right:2%;font-size:100px;--r1:4deg;--r2:-3deg;--sd:18s;">✦</div>
+<div class="bg-orn" style="bottom:20%;left:2%;font-size:120px;--r1:5deg;--r2:-4deg;--sd:22s;">☆</div>
+<div class="bg-orn" style="bottom:5%;right:3%;font-size:90px;--r1:-5deg;--r2:5deg;--sd:20s;">❧</div>
+<div class="bg-orn" style="top:40%;left:0%;font-size:80px;--r1:8deg;--r2:-6deg;--sd:16s;">✦</div>
+<div class="bg-orn" style="top:60%;right:1%;font-size:95px;--r1:-4deg;--r2:6deg;--sd:26s;">⚔</div>
+
+<div id="timer-wrap"><div class="timer-box" id="timer-box">
+  <div class="t-label" id="t-label">Hark</div>
+  <div class="t-num" id="t-num">20</div>
+  <div class="t-sub" id="t-sub">Read &amp; respond</div>
+</div></div>
+
+<div id="app"></div>
+
+<script>
+// ╔══════════════════════════════════════╗
+//   MODE: set to true for teacher build
+// ╚══════════════════════════════════════╝
+var TEACHER_MODE = true;
+
+// ╔══════════════════════════════════════╗
+//   SCENARIOS (30)
+// ╚══════════════════════════════════════╝
+var SCENARIOS = [
+  'Someone just spotted [C1] at a party [C1] was not supposed to attend.',
+  '[C1] needs to ask [C2] for an enormous favour — and is not sure [C2] will say yes.',
+  '[C1] just heard a rumour about one of [C2]\'s closest companions.',
+  '[C1] is planning something in secret and needs [C2]\'s help to pull it off.',
+  '[C1] and [C2] both just witnessed something shocking in public.',
+  '[C1] is trying to talk [C2] out of a terrible decision before it is too late.',
+  '[C1] and [C2] have not spoken in weeks — someone must break the silence.',
+  '[C1] is about to confess something to [C2] that [C1] has been holding back for a long time.',
+  '[C1] and [C2] are both venting about someone who made them furious today.',
+  '[C1] needs honest advice — and [C2] always tells the truth, even when it hurts.',
+  '[C1] just received news that changes everything and must tell [C2] immediately.',
+  '[C1] and [C2] are arguing about whose fault a recent disaster truly was.',
+  '[C2] is about to do something [C2] will almost certainly regret — and [C1] knows it.',
+  '[C1] and [C2] are both anxious about a significant event happening tomorrow.',
+  '[C1] has been keeping a secret from [C2] — and it grows harder to hide each passing day.',
+  '[C1] wants to apologise to [C2], but is not certain how to begin.',
+  '[C1] is trying to convince [C2] to take [C1]\'s side in a serious conflict.',
+  'Something embarrassing just happened to [C1] and [C1] desperately needs to tell [C2].',
+  '[C1] and [C2] are both worried about a mutual friend who has been behaving strangely.',
+  '[C2] is leaving — this may be [C1] and [C2]\'s last opportunity to speak.',
+  '[C1] just uncovered something surprising about [C2]\'s past.',
+  '[C1] and [C2] disagree about what the honourable thing to do is in this situation.',
+  'Someone sent [C1] a mysterious message — and [C1] thinks [C2] might know what it means.',
+  '[C1] and [C2] were both caught doing something they should not have been doing.',
+  '[C2] is frightened and doing [C2]\'s best not to show it — but [C1] can tell.',
+  '[C1] and [C2] are scheming together — planning something that must remain a secret.',
+  '[C1] and [C2] both know a dangerous secret about someone with great power over them.',
+  'Something was said about [C1] behind [C1]\'s back — and [C1] has found out. [C2] was there.',
+  '[C1] needs approval or permission from [C2] — and time is running desperately short.',
+  'Everything has just gone terribly wrong for [C1] and [C2]. They must decide what to do next.'
+];
+
+// ╔══════════════════════════════════════╗
+//   CHARACTER DATA
+// ╚══════════════════════════════════════╝
+var CHARACTERS = [
+  {
+    id:'romeo',name:'Romeo Montague',role:'Son of Montague',gender:'m',
+    short:'Romeo',
+    traits:['Romantic','Impulsive','Passionate','Dramatic'],
+    bullets:[
+      'Falls deeply in love at first sight — twice, within a single week',
+      'Would rather compose poetry about his feelings than speak them plainly',
+      'Makes life-altering decisions in approximately thirty seconds flat',
+      'His heart leads him always; his head follows far, far behind'
+    ],
+    options:['Jack Dawson (Titanic)','Anakin Skywalker (Star Wars)','Edward Cullen (Twilight)','Johnny Cade (The Outsiders)'],
+    fates:['Dies beside Juliet in a tomb','Lives and escapes Verona with Juliet','Is banished and lives out his days in exile','Is imprisoned for killing Tybalt','Returns to his first love, Rosaline']
+  },
+  {
+    id:'juliet',name:'Juliet Capulet',role:'Daughter of Capulet',gender:'f',
+    short:'Juliet',
+    traits:['Brave','Passionate','Young','Determined'],
+    bullets:[
+      'Only thirteen years old and already being pressed into marriage',
+      'More level-headed and clever than Romeo, despite being younger',
+      'Will defy her entire family for what she truly believes in',
+      'Takes enormous, irreversible risks to follow her heart to the very end'
+    ],
+    options:['Ariel (The Little Mermaid)','Katniss Everdeen (The Hunger Games)','Belle (Beauty & the Beast)','Moana'],
+    fates:['Takes her own life rather than live without Romeo','Escapes Verona with Romeo and starts anew','Is forced to marry Paris as her family demands','Flees alone to a convent and becomes a nun','Is disowned and exiled from Verona']
+  },
+  {
+    id:'mercutio',name:'Mercutio',role:"Romeo's Best Friend",gender:'m',
+    short:'Mercutio',
+    traits:['Witty','Wild','Loyal','Hot-headed'],
+    bullets:[
+      'The most electric and amusing presence in any room he enters',
+      'Can transform any moment — grave or trivial — into a full performance',
+      'Would fight anyone, anywhere, over almost anything',
+      'Loyal to a fault — he will go further for the people he loves than is ever wise'
+    ],
+    options:['Tony Stark / Iron Man','Michael Scott (The Office)','Han Solo (Star Wars)','Fred Weasley (Harry Potter)'],
+    fates:['Dies in a street fight defending Romeo\'s honour','Survives and watches Romeo\'s tragedy helplessly','Kills Tybalt himself and is banished','Betrays Romeo to preserve his own life','Becomes the voice of reason and prevents the tragedy']
+  },
+  {
+    id:'benvolio',name:'Benvolio',role:"Romeo's Cousin, the Peacekeeper",gender:'m',
+    short:'Benvolio',
+    traits:['Peaceful','Loyal','Level-headed','Overlooked'],
+    bullets:[
+      'Genuinely and sincerely tries to stop every fight before it begins',
+      'Almost always the most reasonable person present',
+      'His wise counsel is offered constantly and almost never heeded',
+      'The kind of person who cares too much about everyone around him'
+    ],
+    options:['Captain America / Steve Rogers','Samwise Gamgee (Lord of the Rings)','Aang (Avatar: The Last Airbender)','Ponyboy Curtis (The Outsiders)'],
+    fates:['Quietly disappears as tragedy consumes everyone around him','Dies attempting to broker peace between the families','Survives alone, mourning all he ever loved','Is banished from Verona alongside Romeo','Marries quietly and departs far from Verona']
+  },
+  {
+    id:'tybalt',name:'Tybalt',role:"Juliet's Cousin — Prince of Cats",gender:'m',
+    short:'Tybalt',
+    traits:['Aggressive','Prideful','Hot-headed','Dangerous'],
+    bullets:[
+      'Lives for family honour, street brawls, and despising Montagues',
+      'Every encounter is a contest of dominance to him',
+      'Romeo\'s mere presence in a room is enough to drive him to violence',
+      'Has absolutely no interest in peace — not even a little'
+    ],
+    options:['Gaston (Beauty & the Beast)','Draco Malfoy (Harry Potter)','Kylo Ren (Star Wars)','Zuko — early arc (Avatar)'],
+    fates:['Is killed by Romeo in a street duel','Kills Romeo and is imprisoned for life','Is banished for killing Mercutio','Kills both Mercutio and Romeo before being stopped','Is peacefully arrested and brought before the Prince']
+  },
+  {
+    id:'nurse',name:'The Nurse',role:"Juliet's Caretaker & Confidante",gender:'f',
+    short:'Nurse',
+    traits:['Loyal','Gossipy','Warm','Unpredictable'],
+    bullets:[
+      'Has raised Juliet since birth and loves her as her own daughter',
+      'Will speak for twenty minutes when twenty seconds would suffice',
+      'Gleefully helps Romeo and Juliet carry out their secret plans',
+      'The kind of person who always means well — but can be unpredictable under pressure'
+    ],
+    options:['Effie Trinket (The Hunger Games)','Edna Mode (The Incredibles)','Hagrid (Harry Potter)','Olaf (Frozen)'],
+    fates:['Counsels Juliet to forget Romeo and simply marry Paris','Helps Romeo and Juliet escape Verona together','Outlives Juliet and spends her days in mourning','Is arrested and punished for aiding the secret lovers','Reveals the secret marriage to Lord Capulet at once']
+  },
+  {
+    id:'friar',name:'Friar Lawrence',role:'Priest & Secret Counsellor',gender:'m',
+    short:'Friar L.',
+    traits:['Well-meaning','Clever','Reckless','Overconfident'],
+    bullets:[
+      'A friar who believes — perhaps too strongly — that he can outwit fate',
+      'Secretly performs the marriage, hoping to end the ancient feud',
+      'Has an elaborate scheme for every problem — none of them foolproof',
+      'His confidence in his own plans vastly exceeds what the evidence warrants'
+    ],
+    options:['Gandalf (Lord of the Rings)','Dumbledore (Harry Potter)','Walter White (Breaking Bad)','Rafiki (The Lion King)'],
+    fates:['His plan fails catastrophically and costs multiple lives','Saves both lovers and brokers a lasting peace','Is imprisoned for his role in the tragedy','Confesses all to the Prince and faces full judgment','Flees Verona before anyone learns of his involvement']
+  },
+  {
+    id:'paris',name:'Count Paris',role:"Juliet's Intended Suitor",gender:'m',
+    short:'Paris',
+    traits:['Noble','Oblivious','Well-meaning','Unlucky'],
+    bullets:[
+      'Handsome, wealthy, and precisely what the Capulets desire in a son-in-law',
+      'Entirely unaware that Juliet is already secretly and legally married',
+      'Genuinely cares for Juliet in his own somewhat oblivious manner',
+      'A decent enough person — just hopelessly tangled in something far bigger than him'
+    ],
+    options:['Prince Eric (The Little Mermaid)','Prince Charming (Cinderella)','Finn (Star Wars)','Thor (Marvel)'],
+    fates:['Dies in the tomb confronting Romeo','Marries Juliet as their families originally planned','Escapes unharmed when the full truth emerges','Defeats Romeo in a duel and wins Juliet','Lives on, and eventually learns the full tragic truth']
+  },
+  {
+    id:'lordcap',name:'Lord Capulet',role:"Juliet's Father, Head of House",gender:'m',
+    short:'L. Capulet',
+    traits:['Controlling','Temperamental','Proud','Oblivious'],
+    bullets:[
+      'Rules his household with absolute and unquestioned authority',
+      'Begins surprisingly reasonable — briefly — about Juliet\'s marriage',
+      'When defied openly, his temper becomes genuinely terrifying',
+      'Has no idea whatsoever of what transpires beneath his own roof'
+    ],
+    options:['King Triton (The Little Mermaid)','Zeus (Hercules)','Mr. Incredible (The Incredibles)','Ego (Ratatouille)'],
+    fates:['Outlives his daughter and reconciles with enemies in grief','Dies of grief shortly after Juliet\'s death','Is imprisoned for his role in the doomed marriage','Blames the Montagues and declares all-out war','Discovers the secret marriage and disowns Juliet completely']
+  },
+  {
+    id:'ladycap',name:'Lady Capulet',role:"Juliet's Mother",gender:'f',
+    short:'L. Capulet',
+    traits:['Cold','Ambitious','Status-obsessed','Distant'],
+    bullets:[
+      'Wed young herself and sees nothing wrong with Juliet doing the same',
+      'Far more concerned with reputation and status than with Juliet\'s heart',
+      'Has almost no genuine emotional bond with her own daughter',
+      'Prioritises what looks good over what actually is good — every single time'
+    ],
+    options:['Lady Tremaine (Cinderella)','Mother Gothel (Tangled)','Sharpay Evans (High School Musical)','Cersei Lannister (Game of Thrones)'],
+    fates:['Outlives Juliet, consumed by grief and swearing revenge','Dies of grief alongside her husband','Is imprisoned for her role in forcing the marriage','Reconciles warmly with Lady Montague over their shared loss','Discovers the secret too late and blames herself alone']
+  }
+];
+
+var N = CHARACTERS.length; // 10
+
+// ╔══════════════════════════════════════╗
+//   STATE
+// ╚══════════════════════════════════════╝
+var state = {
+  phase:'name', name:'', charIndex:0,
+  guesses:{}, currentGuess:'',
+  choices:{}, fates:{},
+  dmChar1:'romeo', dmChar2:'juliet',
+  dmMessages:[], dmScenario:'',
+  dmSpun:false
+};
+
+// ── Total time tracking ──
+var totalTimeStart=null, totalTimeElapsed=0;
+
+// ╔══════════════════════════════════════╗
+//   TIMER
+// ╚══════════════════════════════════════╝
+var timerInterval=null, timerSeconds=0, timerUnlocked=false;
+var chatTimerSeconds=0, chatTimerInterval=null, chatTimerExpired=false;
+var msgTimerInterval=null, msgTimerUnlocked=false;
+
+function clearMsgTimer(){
+  if(msgTimerInterval){clearInterval(msgTimerInterval);msgTimerInterval=null;}
+  msgTimerUnlocked=false;
+}
+
+function startMsgTimer(secs,onUnlock){
+  clearMsgTimer();
+  if(TEACHER_MODE){msgTimerUnlocked=true;if(onUnlock)onUnlock();return;}
+  var remaining=secs;
+  msgTimerUnlocked=false;
+  msgTimerInterval=setInterval(function(){
+    remaining--;
+    // update inline countdown in send button
+    var sb=document.getElementById('sendBtn');
+    if(sb&&!msgTimerUnlocked) sb.textContent='Wait '+remaining+'s';
+    if(remaining<=0){
+      clearInterval(msgTimerInterval);msgTimerInterval=null;
+      msgTimerUnlocked=true;
+      if(sb) sb.textContent='Send ↵';
+      if(onUnlock)onUnlock();
+    }
+  },1000);
+}
+
+function clearTimer(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  timerSeconds=0; timerUnlocked=false;
+  clearMsgTimer();
+  document.getElementById('timer-wrap').style.display='none';
+}
+
+function startTimer(secs,label,sub,onUnlock){
+  clearTimer();
+  timerSeconds=secs; timerUnlocked=false;
+  if(TEACHER_MODE){timerUnlocked=true;if(onUnlock)onUnlock();return;}
+  var wrap=document.getElementById('timer-wrap');
+  wrap.style.display='block';
+  updateTimerUI(label,sub);
+  timerInterval=setInterval(function(){
+    timerSeconds--;
+    if(timerSeconds<=0){
+      timerSeconds=0;timerUnlocked=true;
+      clearInterval(timerInterval);timerInterval=null;
+      document.getElementById('t-sub').style.color='#4A7C59';
+      document.getElementById('t-sub').style.fontWeight='700';
+      document.getElementById('t-sub').textContent='Proceed!';
+      document.getElementById('t-num').textContent='✓';
+      document.getElementById('timer-box').classList.remove('urgent');
+      if(onUnlock)onUnlock();
+    } else {
+      updateTimerUI(label,sub);
+    }
+  },1000);
+}
+
+function updateTimerUI(label,sub){
+  var m=Math.floor(timerSeconds/60),s=timerSeconds%60;
+  var d=m>0?m+':'+(s<10?'0':'')+s:timerSeconds+'';
+  var urgent=timerSeconds<=5&&timerSeconds>0;
+  document.getElementById('timer-box').className='timer-box'+(urgent?' urgent':'');
+  document.getElementById('t-label').textContent=label;
+  document.getElementById('t-num').textContent=d;
+  document.getElementById('t-sub').textContent=sub;
+  document.getElementById('t-sub').style.color='';
+  document.getElementById('t-sub').style.fontWeight='';
+}
+
+// Chat countdown (3 min = 180s) — separate bar, no lock
+function startChatTimer(){
+  if(TEACHER_MODE){chatTimerExpired=false;return;}
+  chatTimerSeconds=5; chatTimerExpired=false;
+  if(chatTimerInterval)clearInterval(chatTimerInterval);
+  updateChatBar();
+  chatTimerInterval=setInterval(function(){
+    chatTimerSeconds--;
+    if(chatTimerSeconds<=0){
+      chatTimerSeconds=0;chatTimerExpired=true;
+      clearInterval(chatTimerInterval);chatTimerInterval=null;
+    }
+    updateChatBar();
+  },1000);
+}
+function updateChatBar(){
+  var bar=document.getElementById('chatTimerBar');
+  if(!bar)return;
+  var pct=Math.round((chatTimerSeconds/30)*100);
+  bar.style.width=pct+'%';
+  if(chatTimerSeconds<=10)bar.style.background='linear-gradient(90deg,var(--blood),#C03030)';
+}
+function stopChatTimer(){
+  if(chatTimerInterval){clearInterval(chatTimerInterval);chatTimerInterval=null;}
+}
+
+// ╔══════════════════════════════════════╗
+//   HELPERS
+// ╚══════════════════════════════════════╝
+function esc(str){
+  if(!str)return'';
+  var d=document.createElement('div');
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+function isFem(ch){return ch.gender==='f';}
+function transition(cb){
+  var el=document.getElementById('app').firstElementChild;
+  if(el)el.classList.add('fade-out');
+  setTimeout(function(){cb();render();},230);
+}
+
+// ── Title HTML ──
+function titleHTML(eyebrow){
+  return '<div class="title-block">'+
+    '<div class="title-eyebrow">'+(eyebrow||'A Tragedy by William Shakespeare')+'</div>'+
+    '<div class="title-main">Romeo &amp; Juliet</div>'+
+    '<div class="title-sub">The Pre-Reading Character Bracket</div>'+
+    '<div class="title-rule">'+
+    '<div class="title-rule-line"></div>'+
+    '<span class="title-rule-orn">⚔ ✦ ⚔</span>'+
+    '<div class="title-rule-line"></div>'+
+    '</div>'+
+    '</div>';
+}
+
+// ── Phase banner ──
+function phaseBannerHTML(active){
+  var acts=['Act I','Act II','Act III','Act IV','Scroll'];
+  return '<div class="phase-banner">'+acts.map(function(a,i){
+    var cls='phase-seg';
+    if(i<active)cls+=' done';
+    else if(i===active)cls+=' active';
+    return '<div class="'+cls+'">'+a+'</div>';
+  }).join('')+'</div>';
+}
+
+// ── Character track ──
+function charTrackHTML(currentIdx){
+  return '<div class="char-track">'+
+    CHARACTERS.map(function(ch,i){
+      var cls='char-node';
+      if(i<currentIdx)cls+=' done';
+      else if(i===currentIdx)cls+=' active';
+      return '<div class="'+cls+'">'+
+        '<div class="char-node-dot">'+(i<currentIdx?'✓':(i+1))+'</div>'+
+        '<div class="char-node-label">'+esc(ch.short)+'</div>'+
+        '</div>';
+    }).join('')+
+    '</div>';
+}
+
+// ── Bubble HTML ──
+function bubbleHTML(msg,i,c1,c2,m1,m2,compact){
+  var isL=i%2===0;
+  var who=isL?c1:c2;
+  var col=isL?'var(--blood)':'var(--midnight)';
+  var bg=isL?'#F5E0E0':'#E0E8F2';
+  var br=isL?'3px 14px 14px 14px':'14px 3px 14px 14px';
+  var align=isL?'flex-start':'flex-end';
+  var fs=compact?'11px':'14px';
+  var pad=compact?'6px 10px':'10px 14px';
+  var mb=compact?'7px':'12px';
+  return '<div style="display:flex;flex-direction:column;align-items:'+align+';margin-bottom:'+mb+';">'+
+    '<div style="font-family:\'Cinzel\',serif;font-size:8px;letter-spacing:1px;color:'+col+';margin-bottom:2px;text-transform:uppercase;">'+
+    esc(who?who.name:'')+'</div>'+
+    '<div style="max-width:80%;background:'+bg+';border-radius:'+br+';padding:'+pad+';font-size:'+fs+';line-height:1.6;color:var(--ink);border:1px solid '+(isL?'rgba(107,16,16,.12)':'rgba(13,27,62,.12)')+';">'+
+    esc(msg)+'</div></div>';
+}
+
+// ╔══════════════════════════════════════╗
+//   RENDER
+// ╚══════════════════════════════════════╝
+function render(){
+  var app=document.getElementById('app');
+  var s=state;
+
+  // ── NAME ────────────────────────────
+  if(s.phase==='name'){
+    clearTimer();stopChatTimer();
+    app.innerHTML=
+      '<div class="container" style="max-width:480px;margin-top:50px;text-align:center;">'+
+      titleHTML()+
+      '<div class="card">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+      '<span class="corner corner-bl">✦</span><span class="corner corner-br">✦</span>'+
+      '<p style="font-size:15px;font-weight:500;color:var(--ink-mid);line-height:1.9;margin-bottom:10px;">'+
+      'Before thou dost begin to read this ancient tale of love and ruin, thou shalt meet its players. '+
+      'For each character, thou wilt make a first impression, choose a modern match, and predict their fate.</p>'+
+      '<p style="font-size:12px;color:var(--ink-lt);font-weight:500;line-height:1.65;margin-bottom:22px;">'+
+      'All thy judgments shall be sealed and saved as a scroll at journey\'s end.</p>'+
+      '<label style="display:block;text-align:left;font-family:\'Cinzel\',serif;font-size:9px;'+
+      'color:var(--ink-lt);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Thy Name</label>'+
+      '<input class="text-input" type="text" placeholder="Enter thy name..." id="nameInput" value="'+esc(s.name)+'">'+
+      '<button class="btn-main" style="margin-top:18px;" id="nameBtn"'+(s.name.trim()?'':' disabled')+'>'+
+      'Enter the Stage &nbsp; ⚔</button>'+
+      '</div></div>';
+    var ni=document.getElementById('nameInput');
+    ni.addEventListener('input',function(e){
+      state.name=e.target.value;
+      document.getElementById('nameBtn').disabled=!e.target.value.trim();
+    });
+    ni.addEventListener('keydown',function(e){
+      if(e.key==='Enter'&&state.name.trim())showWarningModal();
+    });
+    document.getElementById('nameBtn').addEventListener('click',function(){
+      if(state.name.trim())showWarningModal();
+    });
+    ni.focus();
+    return;
+  }
+
+  // ── INTRO (Act I) ───────────────────
+  if(s.phase==='intro'){
+    timerUnlocked=false; // always reset — prevents carry-over from previous card
+    var ch=CHARACTERS[s.charIndex];
+    var fw=isFem(ch);
+    var tagsHTML=ch.traits.map(function(t){
+      return '<span class="trait-tag '+(fw?'trait-f':'trait-m')+'">'+t+'</span>';
+    }).join('');
+    app.innerHTML=
+      '<div class="container" style="max-width:560px;margin-top:16px;">'+
+      titleHTML('Act I &nbsp;·&nbsp; First Impressions')+
+      phaseBannerHTML(0)+
+      charTrackHTML(s.charIndex)+
+      '<div class="card">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;">'+
+      '<span class="badge '+(fw?'badge-f':'badge-m')+'">'+(fw?'Woman':'Man')+'</span>'+
+      '<span style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);letter-spacing:1px;">'+esc(ch.role)+'</span>'+
+      '</div>'+
+      '<h2 class="char-name '+(fw?'name-f':'name-m')+'">'+esc(ch.name)+'</h2>'+
+      '<div class="trait-tags">'+tagsHTML+'</div>'+
+      '<label style="display:block;font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);'+
+      'margin-bottom:4px;letter-spacing:1.5px;text-transform:uppercase;">Who does this remind you of?</label>'+
+      '<p style="font-size:12px;color:#9A7A5A;margin-bottom:11px;line-height:1.6;">'+
+      'A friend, a family member, thyself, or a character from another tale...</p>'+
+      '<input class="text-input" type="text" placeholder="Type a name..." id="guessInput" value="'+esc(s.currentGuess)+'">'+
+      '<button class="btn-main" style="margin-top:14px;" id="guessBtn" disabled>Proceed &nbsp; ❧</button>'+
+      (s.charIndex>0?'<div style="text-align:center;margin-top:10px;"><button class="btn-outline" id="backBtn">← Back</button></div>':'')+
+      '</div></div>';
+
+    var gi=document.getElementById('guessInput');
+    var gb=document.getElementById('guessBtn');
+    function ugb(){gb.disabled=!(timerUnlocked&&state.currentGuess.trim());}
+    gi.addEventListener('input',function(e){state.currentGuess=e.target.value;ugb();});
+    gi.addEventListener('keydown',function(e){if(e.key==='Enter'&&timerUnlocked&&state.currentGuess.trim())doGuess();});
+    gb.addEventListener('click',function(){if(timerUnlocked)doGuess();});
+    var backBtn=document.getElementById('backBtn');
+    if(backBtn)backBtn.addEventListener('click',function(){
+      clearTimer();
+      state.goingBack=true;
+      transition(function(){state.currentGuess='';state.charIndex=Math.max(0,state.charIndex-1);});
+    });
+    gi.focus();
+    if(state.goingBack){state.goingBack=false;timerUnlocked=true;ugb();}
+    else{startTimer(1,'Hark','Read &amp; respond',function(){ugb();});}
+    return;
+  }
+
+  // ── DETAILED (Act II) ────────────────
+  if(s.phase==='detailed'){
+    timerUnlocked=false;
+    var ch=CHARACTERS[s.charIndex];
+    var fw=isFem(ch);
+    var myG=s.guesses[ch.id]||'(your answer)';
+    var opts=[myG].concat(ch.options);
+    var bHTML=ch.bullets.map(function(b){
+      return '<div class="bullet"><span class="b-dot">✦</span>'+esc(b)+'</div>';
+    }).join('');
+    var oHTML=opts.map(function(o,i){
+      var lbl=i===0?'<span style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--gold);'+
+        'display:block;margin-bottom:3px;letter-spacing:1px;">THY ANSWER</span>':'';
+      return '<button class="btn-option'+(i===0?' yours':'')+'" data-oi="'+i+'" disabled>'+lbl+esc(o)+'</button>';
+    }).join('');
+    app.innerHTML=
+      '<div class="container" style="max-width:580px;margin-top:16px;">'+
+      titleHTML('Act II &nbsp;·&nbsp; Know the Players')+
+      phaseBannerHTML(1)+
+      charTrackHTML(s.charIndex)+
+      '<div class="card">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap;">'+
+      '<span class="badge '+(fw?'badge-f':'badge-m')+'">'+(fw?'Woman':'Man')+'</span>'+
+      '<span style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);letter-spacing:1px;">'+esc(ch.role)+'</span>'+
+      '</div>'+
+      '<h2 class="char-name '+(fw?'name-f':'name-m')+'">'+esc(ch.name)+'</h2>'+
+      '<div style="margin-bottom:18px;">'+bHTML+'</div>'+
+      '<div class="guess-box">Thou didst earlier say: <strong>'+esc(myG)+'</strong></div>'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);margin-bottom:12px;'+
+      'letter-spacing:1.5px;text-transform:uppercase;">Which character is the best match?</div>'+
+      '<div id="optsWrap">'+oHTML+'</div>'+
+      '<div style="text-align:center;margin-top:10px;"><button class="btn-outline" id="backBtn">← Back</button></div>'+
+      '</div></div>';
+
+    if(state.goingBack){
+      state.goingBack=false;timerUnlocked=true;
+      document.querySelectorAll('.btn-option').forEach(function(b){b.disabled=false;});
+    } else {
+      startTimer(1,'Ponder','Read, then choose',function(){
+        document.querySelectorAll('.btn-option').forEach(function(b){b.disabled=false;});
+      });
+    }
+    document.querySelectorAll('.btn-option').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(!timerUnlocked)return;
+        doChoice(opts[parseInt(btn.dataset.oi)]);
+      });
+    });
+    document.getElementById('backBtn').addEventListener('click',function(){
+      clearTimer();
+      state.goingBack=true;
+      transition(function(){
+        if(state.charIndex>0){state.charIndex--;}
+        else{state.phase='intro';state.charIndex=N-1;}
+      });
+    });
+    return;
+  }
+
+  // ── FATE INTRO ───────────────────────
+  if(s.phase==='fateintro'){
+    clearTimer();
+    app.innerHTML=
+      '<div class="container" style="max-width:520px;margin-top:40px;text-align:center;">'+
+      titleHTML('Act III &nbsp;·&nbsp; The Fates')+
+      phaseBannerHTML(2)+
+      '<div class="card" style="text-align:left;">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+      '<span class="corner corner-bl">✦</span><span class="corner corner-br">✦</span>'+
+
+      // Big ornamental heading
+      '<div style="text-align:center;margin-bottom:24px;">'+
+      '<div style="font-size:36px;color:var(--blood);margin-bottom:10px;line-height:1;">⚔</div>'+
+      '<div style="font-family:\'Cinzel Decorative\',serif;font-size:20px;font-weight:700;'+
+      'color:var(--ink);line-height:1.2;margin-bottom:6px;">A Shakespearean Tragedy</div>'+
+      '<div style="width:60px;height:2px;background:var(--blood);margin:0 auto;"></div>'+
+      '</div>'+
+
+      // Body text
+      '<p style="font-size:15px;line-height:2;color:var(--ink-mid);margin-bottom:16px;">'+
+      'Thou art about to read one of the most famous tragedies ever written. '+
+      'In a tragedy, things do not end well — not for everyone, and perhaps not for anyone.'+
+      '</p>'+
+      '<p style="font-size:15px;line-height:2;color:var(--ink-mid);margin-bottom:16px;">'+
+      'For each character, thou wilt now be asked to make a prediction: '+
+      '<em>what dost thou think might happen to them?</em>'+
+      '</p>'+
+
+      // Callout box
+      '<div style="background:rgba(107,16,16,.06);border:1px solid rgba(107,16,16,.2);'+
+      'border-left:4px solid var(--blood);border-radius:3px;padding:16px 18px;margin-bottom:16px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:10px;color:var(--blood);'+
+      'letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Remember</div>'+
+      '<p style="font-size:14px;line-height:1.9;color:var(--ink-mid);margin-bottom:8px;">'+
+      '✦ &nbsp;There are <strong>no right or wrong answers</strong> here.'+
+      '</p>'+
+      '<p style="font-size:14px;line-height:1.9;color:var(--ink-mid);margin-bottom:8px;">'+
+      '✦ &nbsp;These are <strong>predictions</strong> — thy best guess based on what little thou knowest of these characters so far.'+
+      '</p>'+
+      '<p style="font-size:14px;line-height:1.9;color:var(--ink-mid);">'+
+      '✦ &nbsp;The only clue thou hast is this: <em>it is a Shakespearean tragedy.</em> Plan accordingly.'+
+      '</p>'+
+      '</div>'+
+
+      '<button class="btn-main" id="fateIntroBtn" style="margin-top:8px;">'+
+      'Make My Predictions &nbsp; ⚔</button>'+
+      '</div></div>';
+
+    document.getElementById('fateIntroBtn').addEventListener('click',function(){
+      transition(function(){state.phase='fate';});
+    });
+    return;
+  }
+
+  // ── FATE (Act III) ───────────────────
+  if(s.phase==='fate'){
+    timerUnlocked=false;
+    var ch=CHARACTERS[s.charIndex];
+    var fw=isFem(ch);
+    var myChoice=s.choices[ch.id]||'—';
+    var firstName=ch.name.split(' ')[0];
+    // Shuffle a copy of the fates array
+    var shuffled=ch.fates.slice();
+    for(var si=shuffled.length-1;si>0;si--){
+      var sj=Math.floor(Math.random()*(si+1));
+      var tmp=shuffled[si];shuffled[si]=shuffled[sj];shuffled[sj]=tmp;
+    }
+    var fHTML=shuffled.map(function(f){
+      return '<button class="btn-option" data-fate="'+esc(f)+'" disabled>'+esc(f)+'</button>';
+    }).join('');
+    app.innerHTML=
+      '<div class="container" style="max-width:580px;margin-top:16px;">'+
+      titleHTML('Act III &nbsp;·&nbsp; The Fates')+
+      phaseBannerHTML(2)+
+      charTrackHTML(s.charIndex)+
+      '<div class="card">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap;">'+
+      '<span class="badge '+(fw?'badge-f':'badge-m')+'">'+(fw?'Woman':'Man')+'</span>'+
+      '<span style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);letter-spacing:1px;">'+esc(ch.role)+'</span>'+
+      '</div>'+
+      '<h2 class="char-name '+(fw?'name-f':'name-m')+'">'+esc(ch.name)+'</h2>'+
+      '<div style="background:rgba(13,27,62,.06);border:1px solid rgba(13,27,62,.15);border-radius:3px;'+
+      'padding:10px 14px;margin:14px 0 16px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--midnight-lt);letter-spacing:1.5px;'+
+      'text-transform:uppercase;margin-bottom:3px;">Thy character match</div>'+
+      '<div style="font-size:14px;font-weight:600;">'+esc(myChoice)+'</div>'+
+      '</div>'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);margin-bottom:12px;'+
+      'letter-spacing:1.5px;text-transform:uppercase;">What fate dost thou predict for '+esc(firstName)+'?</div>'+
+      '<div id="fateBtns">'+fHTML+'</div>'+
+      '<div style="text-align:center;margin-top:10px;"><button class="btn-outline" id="backBtn">← Back</button></div>'+
+      '</div></div>';
+
+    if(state.goingBack){
+      state.goingBack=false;timerUnlocked=true;
+      document.querySelectorAll('[data-fate]').forEach(function(b){b.disabled=false;});
+    } else {
+      startTimer(1,'Prophesy','Consider their fate',function(){
+        document.querySelectorAll('[data-fate]').forEach(function(b){b.disabled=false;});
+      });
+    }
+    document.querySelectorAll('[data-fate]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(!timerUnlocked)return;
+        doFate(btn.dataset.fate);
+      });
+    });
+    document.getElementById('backBtn').addEventListener('click',function(){
+      clearTimer();
+      state.goingBack=true;
+      transition(function(){
+        if(state.charIndex>0){state.charIndex--;}
+        else{state.phase='fateintro';}
+      });
+    });
+    return;
+  }
+
+  // ── WRITTEN (Act IV) ─────────────────
+  if(s.phase==='written'){
+    clearTimer();
+
+    if(!s.dmChar1)s.dmChar1='romeo';
+    if(!s.dmChar2)s.dmChar2='juliet';
+    if(!s.dmMessages)s.dmMessages=[];
+
+    var c1=CHARACTERS.find(function(c){return c.id===s.dmChar1;});
+    var c2=CHARACTERS.find(function(c){return c.id===s.dmChar2;});
+    var m1=s.choices[s.dmChar1]||c1.name;
+    var m2=s.choices[s.dmChar2]||c2.name;
+    var msgs=s.dmMessages;
+    var msgCount=msgs.length;
+    var turn=msgCount%2===0?1:2;
+    var turnChar=turn===1?c1:c2;
+    var turnMatch=turn===1?m1:m2;
+    var canFinish=msgCount>=10;
+
+    // Start chat timer on first render of this phase (only if not already running and not expired)
+    if(!chatTimerInterval && !chatTimerExpired && msgCount===0){
+      startChatTimer();
+    }
+
+    var charOpts1=CHARACTERS.map(function(c){
+      return '<option value="'+c.id+'"'+(s.dmChar1===c.id?' selected':'')+'>'+c.name+'</option>';
+    }).join('');
+    var charOpts2=CHARACTERS.map(function(c){
+      return '<option value="'+c.id+'"'+(s.dmChar2===c.id?' selected':'')+'>'+c.name+'</option>';
+    }).join('');
+
+    // Scenario section
+    var scenarioHTML='';
+    if(s.dmSpun && s.dmScenario){
+      scenarioHTML=
+        '<div class="scenario-box">'+
+        '<div class="scenario-label">✦ &nbsp;Thy Scenario</div>'+
+        '<div class="scenario-text" id="scenarioText">'+esc(s.dmScenario)+'</div>'+
+        '<button class="btn-outline" id="respinBtn" style="margin-top:12px;font-size:9px;">↻ &nbsp;Spin Again</button>'+
+        '</div>';
+    } else {
+      scenarioHTML=
+        '<div class="scenario-box">'+
+        '<div class="scenario-label">✦ &nbsp;What art thou discussing?</div>'+
+        '<div class="scenario-text" id="scenarioText" style="color:var(--ink-lt);">'+
+        'Spin the wheel to receive a scenario for thy exchange...</div>'+
+        '<button class="btn-main btn-gold-style" id="spinBtn" style="margin-top:12px;width:auto;'+
+        'padding:10px 24px;display:inline-block;">⚙ &nbsp;Spin the Scenario Wheel</button>'+
+        '</div>';
+    }
+
+    // Bubbles
+    var bubblesHTML=msgs.length===0
+      ?'<div class="chat-empty">The exchange begins when thou dost send the first message...</div>'
+      :msgs.map(function(msg,i){return bubbleHTML(msg,i,c1,c2,m1,m2);}).join('');
+
+    // Pip row
+    var pipsHTML='';
+    for(var pi=0;pi<10;pi++){
+      var cls='pip ';
+      if(pi<msgCount) cls+=(pi%2===0?'pip-done-l':'pip-done-r');
+      else cls+='pip-empty';
+      pipsHTML+='<div class="'+cls+'"></div>';
+    }
+
+    // Chat timer bar (only if not teacher and not expired)
+    var timerBarHTML='';
+    if(!TEACHER_MODE){
+      var pct=Math.round((chatTimerSeconds/30)*100);
+      var barColor=chatTimerExpired?'#999':(chatTimerSeconds<=10?'var(--blood)':'linear-gradient(90deg,var(--gold),var(--gold-bright))');
+      timerBarHTML=
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+
+        '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--ink-lt);letter-spacing:1px;white-space:nowrap;">'+
+        (chatTimerExpired?'Time hath elapsed':'Time remaining')+'</div>'+
+        '<div class="chat-timer-bar-wrap" style="flex:1;">'+
+        '<div class="chat-timer-bar" id="chatTimerBar" style="width:'+pct+'%;background:'+barColor+';"></div>'+
+        '</div>'+
+        '<div style="font-family:\'Cinzel\',serif;font-size:10px;color:'+(chatTimerExpired?'#999':'var(--gold)')+';min-width:24px;text-align:right;">'+
+        (chatTimerExpired?'—':chatTimerSeconds+'s')+
+        '</div></div>';
+    }
+
+    app.innerHTML=
+      '<div class="container" style="max-width:600px;margin-top:16px;">'+
+      titleHTML('Act IV &nbsp;·&nbsp; A Modern Correspondence')+
+      phaseBannerHTML(3)+
+      '<div class="card" style="padding:22px 20px;">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+
+      // Instructions panel
+      '<div style="background:linear-gradient(135deg,rgba(13,27,62,.06),rgba(107,16,16,.05));'+
+      'border:1px solid var(--border);border-radius:4px;padding:18px 20px;margin-bottom:20px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:10px;color:var(--blood);letter-spacing:2px;'+
+      'text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border-lt);">'+
+      '✦ &nbsp;The Assignment</div>'+
+      '<p style="font-size:14px;line-height:1.9;color:var(--ink);margin-bottom:10px;font-weight:500;">'+
+      'In this final section, you will put two characters from <em>Romeo &amp; Juliet</em> into a conversation '+
+      'using your knowledge of who they are from the previous rounds.</p>'+
+      '<p style="font-size:14px;line-height:1.9;color:var(--ink);margin-bottom:12px;font-weight:500;">'+
+      'Think about how each character would actually talk — their personality, their relationship to the other person, '+
+      'and the modern character you matched them with. Then place them in a scenario and hash it out.</p>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
+      '<div style="background:rgba(107,16,16,.07);border-left:3px solid var(--blood);'+
+      'border-radius:2px;padding:10px 12px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--blood);letter-spacing:1.5px;'+
+      'text-transform:uppercase;margin-bottom:5px;">Step 1</div>'+
+      '<div style="font-size:12px;color:var(--ink-mid);line-height:1.65;font-weight:500;">'+
+      'Choose the two characters you want to write. They default to Romeo &amp; Juliet, but you can pick any two.</div>'+
+      '</div>'+
+      '<div style="background:rgba(13,27,62,.07);border-left:3px solid var(--midnight);'+
+      'border-radius:2px;padding:10px 12px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--midnight);letter-spacing:1.5px;'+
+      'text-transform:uppercase;margin-bottom:5px;">Step 2</div>'+
+      '<div style="font-size:12px;color:var(--ink-mid);line-height:1.65;font-weight:500;">'+
+      'Spin the scenario wheel to get your situation, then take turns typing messages back and forth.</div>'+
+      '</div>'+
+      '<div style="background:rgba(122,84,0,.07);border-left:3px solid var(--gold);'+
+      'border-radius:2px;padding:10px 12px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--gold);letter-spacing:1.5px;'+
+      'text-transform:uppercase;margin-bottom:5px;">Step 3</div>'+
+      '<div style="font-size:12px;color:var(--ink-mid);line-height:1.65;font-weight:500;">'+
+      'Write at least 10 messages total — alternating between the two characters with each send.</div>'+
+      '</div>'+
+      '<div style="background:rgba(21,8,0,.05);border-left:3px solid var(--ink-lt);'+
+      'border-radius:2px;padding:10px 12px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--ink-lt);letter-spacing:1.5px;'+
+      'text-transform:uppercase;margin-bottom:5px;">Remember</div>'+
+      '<div style="font-size:12px;color:var(--ink-mid);line-height:1.65;font-weight:500;">'+
+      'Stay in character. Use everything you learned — their traits, their role, the person you matched them with.</div>'+
+      '</div>'+
+      '</div>'+
+      '</div>'+
+
+      // Character selectors
+      '<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">'+
+      '<div style="flex:1;min-width:120px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--blood);'+
+      'letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Left — Character 1</div>'+
+      '<select class="sel-input" id="dm1" style="font-size:13px;padding:7px 10px;">'+charOpts1+'</select>'+
+      '</div>'+
+      '<div style="font-family:\'Cinzel Decorative\',serif;font-size:18px;color:var(--gold-lt);padding-top:14px;">↔</div>'+
+      '<div style="flex:1;min-width:120px;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--midnight);'+
+      'letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Right — Character 2</div>'+
+      '<select class="sel-input" id="dm2" style="font-size:13px;padding:7px 10px;">'+charOpts2+'</select>'+
+      '</div>'+
+      '</div>'+
+
+      // Match subtitles — show who they are writing as
+      '<div style="display:flex;justify-content:space-between;margin-bottom:14px;padding:6px 10px;'+
+      'background:rgba(0,0,0,.03);border-radius:3px;border:1px solid var(--border-lt);">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--blood);letter-spacing:1px;text-transform:uppercase;">'+
+      esc(c1.name)+' &nbsp;<span style="color:var(--gold-lt);">·</span>&nbsp; <span style="font-family:\'Lora\',serif;font-size:12px;font-weight:600;">'+esc(m1)+'</span></div>'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--midnight);letter-spacing:1px;text-transform:uppercase;text-align:right;">'+
+      esc(c2.name)+' &nbsp;<span style="color:var(--gold-lt);">·</span>&nbsp; <span style="font-family:\'Lora\',serif;font-size:12px;font-weight:600;">'+esc(m2)+'</span></div>'+
+      '</div>'+
+
+      // Scenario
+      scenarioHTML+
+
+      // Chat timer bar
+      timerBarHTML+
+
+      // Chat window
+      '<div class="chat-window" id="chatWindow">'+bubblesHTML+'</div>'+
+
+      // Pip row
+      '<div class="pip-row">'+pipsHTML+
+      '<span style="font-family:\'Cinzel\',serif;font-size:8px;color:var(--ink-lt);margin-left:8px;letter-spacing:1px;">'+
+      msgCount+' / 10</span></div>'+
+
+      // Turn indicator + input (hide if done)
+      (canFinish?'':
+        '<div class="turn-box '+(turn===1?'turn-box-l':'turn-box-r')+'">'+
+        '<div class="turn-label" style="color:'+(turn===1?'var(--blood)':'var(--midnight)')+';">'+
+        esc(turnChar.name)+'\'s Turn &nbsp;·&nbsp; Writing as '+esc(turnMatch)+'</div>'+
+        '<div class="send-row">'+
+        '<input class="send-input" id="msgInput" type="text" placeholder="Type a message...">'+
+        '<button class="send-btn '+(turn===1?'send-btn-l':'send-btn-r')+'" id="sendBtn">Send ↵</button>'+
+        '</div></div>'
+      )+
+
+      '<button class="btn-main '+(canFinish?'':'btn-navy')+'" id="finishBtn"'+
+      (canFinish?'':' disabled')+' style="margin-top:10px;">'+
+      (canFinish?'Complete My Scroll &nbsp; ✦':
+        'Keep Writing — '+(10-msgCount)+' more to go')+'</button>'+
+      '</div></div>';
+
+    // Scroll chat to bottom
+    var cw=document.getElementById('chatWindow');
+    if(cw)cw.scrollTop=cw.scrollHeight;
+
+    // Scenario spin
+    var spinBtn=document.getElementById('spinBtn');
+    var respinBtn=document.getElementById('respinBtn');
+    if(spinBtn)spinBtn.addEventListener('click',function(){doSpin();});
+    if(respinBtn)respinBtn.addEventListener('click',function(){doSpin();});
+
+    // Character swap (locked once chatting)
+    document.getElementById('dm1').addEventListener('change',function(e){
+      if(msgs.length>0)return;
+      state.dmChar1=e.target.value;render();
+    });
+    document.getElementById('dm2').addEventListener('change',function(e){
+      if(msgs.length>0)return;
+      state.dmChar2=e.target.value;render();
+    });
+
+    // Send
+    var mi=document.getElementById('msgInput');
+    var sb=document.getElementById('sendBtn');
+    function sendMsg(){
+      if(!mi||!mi.value.trim())return;
+      if(!msgTimerUnlocked)return;
+      if(!state.dmMessages)state.dmMessages=[];
+      state.dmMessages.push(mi.value.trim());
+      clearMsgTimer();
+      render();
+    }
+    if(mi){mi.focus();mi.addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg();});}
+    if(sb){
+      sb.disabled=true;
+      sb.textContent='Wait 1s';
+      sb.addEventListener('click',sendMsg);
+    }
+    // Start per-message timer — unlocks send button
+    startMsgTimer(1,function(){
+      var s2=document.getElementById('sendBtn');
+      if(s2){s2.disabled=false;s2.textContent='Send ↵';}
+    });
+
+    document.getElementById('finishBtn').addEventListener('click',function(){
+      if(!canFinish)return;
+      stopChatTimer();
+      transition(function(){state.phase='summary';});
+    });
+
+    // Keep chat timer updating
+    if(!TEACHER_MODE && !chatTimerExpired && chatTimerInterval){
+      // Already running; bar will update via its own interval
+    }
+    return;
+  }
+
+  // ── SUMMARY ──────────────────────────
+  if(s.phase==='summary'){
+    clearTimer();stopChatTimer();
+    // Stop total time clock
+    if(totalTimeStart && !totalTimeElapsed){
+      totalTimeElapsed=Math.floor((Date.now()-totalTimeStart)/1000);
+    }
+    var elapsed=totalTimeElapsed||0;
+    var eMin=Math.floor(elapsed/60), eSec=elapsed%60;
+    var elapsedStr=eMin>0?eMin+' min '+(eSec>0?eSec+' sec':''):eSec+' sec';
+    var gRows=CHARACTERS.map(function(ch){
+      return '<div class="sum-row"><span class="sn">'+esc(ch.name)+'</span><span class="sv">'+esc(s.guesses[ch.id]||'—')+'</span></div>';
+    }).join('');
+    var cRows=CHARACTERS.map(function(ch){
+      return '<div class="sum-row"><span class="sn">'+esc(ch.name)+'</span><span class="sv">'+esc(s.choices[ch.id]||'—')+'</span></div>';
+    }).join('');
+    var fRows=CHARACTERS.map(function(ch){
+      return '<div class="sum-row"><span class="sn">'+esc(ch.name)+'</span><span class="sv">'+esc(s.fates[ch.id]||'—')+'</span></div>';
+    }).join('');
+    var dc1=CHARACTERS.find(function(c){return c.id===s.dmChar1;});
+    var dc2=CHARACTERS.find(function(c){return c.id===s.dmChar2;});
+    var dm1=s.choices[s.dmChar1]||'';
+    var dm2=s.choices[s.dmChar2]||'';
+    var msgs=s.dmMessages||[];
+
+    var dmHead=dc1&&dc2
+      ?'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">'+
+        '<span style="font-family:\'Cinzel\',serif;color:var(--blood);font-size:12px;font-weight:700;">'+esc(dc1.name)+'</span>'+
+        (dm1?'<span style="font-size:10px;font-weight:600;color:var(--gold);">as '+esc(dm1)+'</span>':'')+
+        '<span style="color:var(--gold-lt);font-weight:600;">&amp;</span>'+
+        '<span style="font-family:\'Cinzel\',serif;color:var(--midnight);font-size:12px;font-weight:700;">'+esc(dc2.name)+'</span>'+
+        (dm2?'<span style="font-size:10px;font-weight:600;color:var(--gold);">as '+esc(dm2)+'</span>':'')+
+        '</div>'
+      :'';
+    if(s.dmScenario){
+      dmHead+='<div style="font-size:12px;font-weight:500;color:var(--ink-lt);margin-bottom:12px;'+
+        'padding:8px 12px;background:rgba(122,84,0,.06);border-left:3px solid var(--gold-lt);border-radius:2px;">'+
+        'Scenario: '+esc(s.dmScenario)+'</div>';
+    }
+    var chatHTML=msgs.length===0
+      ?'<div style="font-weight:500;color:var(--ink-lt);font-size:12px;padding:8px 0;">(no messages)</div>'
+      :msgs.map(function(msg,i){
+        var isL=i%2===0;
+        var who=isL?dc1:dc2;
+        var col=isL?'var(--blood)':'var(--midnight)';
+        var bg=isL?'rgba(107,16,16,.06)':'rgba(13,27,62,.06)';
+        var align=isL?'left':'right';
+        var borderSide=isL?'border-left:3px solid '+col+';':'border-right:3px solid '+col+';';
+        return '<div style="display:flex;align-items:baseline;gap:8px;padding:5px 8px;'+
+          'background:'+bg+';'+borderSide+
+          'border-radius:2px;margin-bottom:4px;">'+
+          '<span style="font-family:\'Cinzel\',serif;font-size:8px;color:'+col+';'+
+          'letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;min-width:90px;'+
+          (isL?'':'text-align:right;order:2;')+'">'+
+          esc(who?who.name:'')+'</span>'+
+          '<span style="font-size:11px;line-height:1.55;color:var(--ink);font-weight:500;flex:1;'+
+          (isL?'':'text-align:right;')+'">'+esc(msg)+'</span>'+
+          '</div>';
+      }).join('');
+
+    app.innerHTML=
+      '<div class="container-md" style="margin-top:16px;">'+
+      titleHTML('The Final Scroll')+
+      phaseBannerHTML(4)+
+      '<div class="card" style="max-width:660px;padding:28px 24px;">'+
+      '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+      '<div style="text-align:center;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border-lt);">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--blood);letter-spacing:3px;'+
+      'text-transform:uppercase;margin-bottom:4px;">Results for</div>'+
+      '<div style="font-family:\'Cinzel Decorative\',serif;font-size:26px;font-weight:700;">'+esc(s.name)+'</div>'+
+      (elapsed?'<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);'+
+      'letter-spacing:2px;margin-top:6px;text-transform:uppercase;">Time Completed &nbsp;·&nbsp; '+elapsedStr+'</div>':'')+'</div>'+
+      '<div class="sum-sec"><div class="sum-head sum-head-c">✦ &nbsp;Act I — First Impressions</div>'+gRows+'</div>'+
+      '<div class="sum-sec"><div class="sum-head sum-head-n">✦ &nbsp;Act II — Character Matches</div>'+cRows+'</div>'+
+      '<div class="sum-sec"><div class="sum-head sum-head-g">✦ &nbsp;Act III — Fate Predictions</div>'+fRows+'</div>'+
+      '<div class="sum-sec">'+
+      '<div class="sum-head sum-head-p">✦ &nbsp;Act IV — Modern DM Exchange</div>'+
+      dmHead+
+      '<div style="background:var(--vellum-lt);border:1px solid var(--border-lt);border-radius:3px;padding:10px 8px;">'+chatHTML+'</div>'+
+      '</div>'+
+      '<button class="btn-main" id="pdfBtn" style="font-size:11px;margin-top:4px;">📜 &nbsp;Download My Scroll as PDF</button>'+
+      '<div style="margin-top:14px;padding:12px 16px;background:rgba(13,27,62,.05);border:1px solid var(--border-lt);border-radius:3px;text-align:center;">'+
+      '<div style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--midnight);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">If the PDF button does not work</div>'+
+      '<p style="font-size:12px;color:var(--ink-mid);line-height:1.7;font-weight:500;margin-bottom:10px;">Take a screenshot of this page and submit that instead. On most devices: <strong>Windows</strong> — press Win + Shift + S &nbsp;·&nbsp; <strong>Mac</strong> — press Cmd + Shift + 4 &nbsp;·&nbsp; <strong>Chromebook</strong> — press Ctrl + Shift + Show Windows</p>'+
+      '<button class="btn-main btn-navy" id="screenshotHintBtn" style="width:auto;padding:9px 20px;">📸 &nbsp;Copy Page as Image</button>'+
+      '</div>'+
+      '<p style="font-family:\'Cinzel\',serif;font-size:9px;color:var(--ink-lt);text-align:center;'+
+      'margin-top:12px;letter-spacing:1px;">SAVE THY SCROLL · THEN SUBMIT AS DIRECTED</p>'+
+      '</div></div>';
+
+    document.getElementById('pdfBtn').addEventListener('click',generatePDF);
+    document.getElementById('screenshotHintBtn').addEventListener('click',function(){
+      var btn=document.getElementById('screenshotHintBtn');
+      if(typeof html2canvas!=='undefined'){
+        btn.textContent='Capturing...';btn.disabled=true;
+        html2canvas(document.getElementById('app')).then(function(canvas){
+          canvas.toBlob(function(blob){
+            navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){
+              btn.innerHTML='✓ &nbsp;Copied! Paste it anywhere to save.';
+              btn.style.background='linear-gradient(170deg,#2E5E3E,#3A7A50)';
+              setTimeout(function(){btn.innerHTML='📸 &nbsp;Copy Page as Image';btn.style.background='';btn.disabled=false;},4000);
+            }).catch(function(){
+              var link=document.createElement('a');
+              link.download='RomeoJuliet-Bracket-'+state.name.replace(/\s+/g,'-')+'.png';
+              link.href=canvas.toDataURL();link.click();
+              btn.innerHTML='✓ &nbsp;Downloaded as image!';
+              btn.style.background='linear-gradient(170deg,#2E5E3E,#3A7A50)';
+              setTimeout(function(){btn.innerHTML='📸 &nbsp;Copy Page as Image';btn.style.background='';btn.disabled=false;},4000);
+            });
+          });
+        });
+      } else {
+        btn.innerHTML='📸 &nbsp;Use Win+Shift+S / Cmd+Shift+4 to screenshot';
+        setTimeout(function(){btn.innerHTML='📸 &nbsp;Copy Page as Image';},4000);
+      }
+    });
+    return;
+  }
+}
+
+// ╔══════════════════════════════════════╗
+//   ACTIONS
+// ╚══════════════════════════════════════╝
+function doGuess(){
+  if(!state.currentGuess.trim()||!timerUnlocked)return;
+  timerUnlocked=false;
+  var ch=CHARACTERS[state.charIndex];
+  state.guesses[ch.id]=state.currentGuess.trim();
+  state.currentGuess='';
+  if(state.charIndex<N-1){transition(function(){state.charIndex++;});}
+  else{transition(function(){state.charIndex=0;state.phase='detailed';});}
+}
+
+function doChoice(c){
+  if(!timerUnlocked)return;
+  timerUnlocked=false;
+  var ch=CHARACTERS[state.charIndex];
+  state.choices[ch.id]=c;
+  if(state.charIndex<N-1){transition(function(){state.charIndex++;});}
+  else{transition(function(){state.charIndex=0;state.phase='fateintro';});}
+}
+
+function doFate(f){
+  if(!timerUnlocked)return;
+  timerUnlocked=false;
+  var ch=CHARACTERS[state.charIndex];
+  state.fates[ch.id]=f;
+  if(state.charIndex<N-1){transition(function(){state.charIndex++;});}
+  else{transition(function(){state.phase='written';});}
+}
+
+function doSpin(){
+  var txt=document.getElementById('scenarioText');
+  if(!txt)return;
+  var c1=CHARACTERS.find(function(c){return c.id===state.dmChar1;});
+  var c2=CHARACTERS.find(function(c){return c.id===state.dmChar2;});
+  var n1=c1?c1.name.split(' ')[0]:'Character 1';
+  var n2=c2?c2.name.split(' ')[0]:'Character 2';
+  // Special cases: "The Nurse" → "Nurse", "Friar Lawrence" → "Friar Lawrence"
+  if(c1&&c1.id==='nurse') n1='The Nurse';
+  if(c2&&c2.id==='nurse') n2='The Nurse';
+  function personalize(s){
+    return s.replace(/\[C1\]/g,n1).replace(/\[C2\]/g,n2);
+  }
+  var count=0, max=14;
+  var spin=setInterval(function(){
+    var idx=Math.floor(Math.random()*SCENARIOS.length);
+    txt.style.opacity='.5';
+    txt.textContent=personalize(SCENARIOS[idx]);
+    setTimeout(function(){txt.style.opacity='1';},80);
+    count++;
+    if(count>=max){
+      clearInterval(spin);
+      var final=SCENARIOS[Math.floor(Math.random()*SCENARIOS.length)];
+      var personalizedFinal=personalize(final);
+      state.dmScenario=personalizedFinal;
+      state.dmSpun=true;
+      txt.textContent=personalizedFinal;
+    }
+  },100);
+}
+
+// ╔══════════════════════════════════════╗
+//   PDF GENERATION
+// ╚══════════════════════════════════════╝
+function generatePDF(){
+  if(typeof window.jspdf==='undefined'){
+    alert('The PDF library hath not loaded. Please check thy connection and try again.');return;
+  }
+  var btn=document.getElementById('pdfBtn');
+  if(btn){btn.textContent='Inscribing thy scroll...';btn.disabled=true;}
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var PW=210,PH=297,M=16,CW=PW-M*2;
+    var y=M;
+    function np(){doc.addPage();y=M;}
+    function chk(n){if(y+n>PH-M-6)np();}
+    function hline(yy,r,g,b,w){doc.setDrawColor(r||139,g||105,b||20);doc.setLineWidth(w||0.3);doc.line(M,yy,PW-M,yy);}
+
+    // ── Header ──
+    doc.setFillColor(21,8,0);doc.rect(0,0,PW,44,'F');
+    doc.setFillColor(107,16,16);doc.rect(0,44,PW,3,'F');
+    doc.setFillColor(13,27,62);doc.rect(0,47,PW,2,'F');
+    doc.setFont('times','bold');doc.setFontSize(26);doc.setTextColor(253,245,230);
+    doc.text('Romeo & Juliet',PW/2,17,{align:'center'});
+    doc.setFont('times','italic');doc.setFontSize(13);doc.setTextColor(212,185,130);
+    doc.text('Pre-Reading Character Bracket',PW/2,27,{align:'center'});
+    doc.setFont('times','normal');doc.setFontSize(10);doc.setTextColor(160,140,100);
+    var ds=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    doc.text(state.name+'   ·   '+ds,PW/2,36,{align:'center'});
+    y=56;
+
+    function secHdr(title,r,g,b){
+      chk(14);
+      doc.setFillColor(r,g,b);doc.rect(M,y,CW,9,'F');
+      doc.setFont('times','bold');doc.setFontSize(10);doc.setTextColor(253,249,230);
+      doc.text(title,M+5,y+6);doc.setTextColor(21,8,0);y+=13;
+    }
+    function dataRow(lbl,val,shade){
+      var lw=62;
+      var vlines=doc.splitTextToSize(val||'—',CW-lw-4);
+      var rh=Math.max(7.5,vlines.length*4.8+3);
+      chk(rh+1);
+      if(shade){doc.setFillColor(248,244,232);doc.rect(M,y,CW,rh,'F');}
+      doc.setFont('times','bold');doc.setFontSize(9);doc.setTextColor(21,8,0);
+      doc.text(lbl,M+3,y+5);
+      doc.setFont('times','italic');doc.setFontSize(9);doc.setTextColor(70,45,14);
+      doc.text(vlines,M+lw,y+5);
+      doc.setTextColor(21,8,0);y+=rh+0.5;
+    }
+
+    secHdr('Act I  —  First Impressions (Who does this remind you of?)',107,16,16);
+    CHARACTERS.forEach(function(ch,i){dataRow(ch.name,state.guesses[ch.id]||'(no response)',i%2===0);});
+    chk(8);hline(y,139,105,20,0.3);y+=8;
+
+    secHdr('Act II  —  Character Matches',13,27,62);
+    CHARACTERS.forEach(function(ch,i){dataRow(ch.name,state.choices[ch.id]||'(no response)',i%2===0);});
+    chk(8);hline(y,139,105,20,0.3);y+=8;
+
+    secHdr('Act III  —  Fate Predictions',80,42,14);
+    CHARACTERS.forEach(function(ch,i){dataRow(ch.name,state.fates[ch.id]||'(no response)',i%2===0);});
+    chk(8);hline(y,139,105,20,0.3);y+=8;
+
+    secHdr('Act IV  —  Modern DM Exchange',74,20,74);
+
+    var dc1=CHARACTERS.find(function(c){return c.id===state.dmChar1;});
+    var dc2=CHARACTERS.find(function(c){return c.id===state.dmChar2;});
+    var pm1=state.choices[state.dmChar1]||'';
+    var pm2=state.choices[state.dmChar2]||'';
+
+    if(dc1&&dc2){
+      chk(10);
+      doc.setFont('times','bold');doc.setFontSize(10);doc.setTextColor(21,8,0);
+      doc.text('Characters:',M+3,y+5.5);
+      doc.setFont('times','italic');doc.setFontSize(10);doc.setTextColor(107,16,16);
+      var n1=dc1.name+(pm1?' (as '+pm1+')':'');
+      var n2=dc2.name+(pm2?' (as '+pm2+')':'');
+      var charLine=doc.splitTextToSize(n1+'  &  '+n2,CW-40);
+      doc.text(charLine,M+40,y+5.5);doc.setTextColor(21,8,0);y+=charLine.length*5.5+3;
+    }
+    if(state.dmScenario){
+      chk(12);
+      var sLines=doc.splitTextToSize('Scenario: '+state.dmScenario,CW-8);
+      var sH=sLines.length*4.8+7;
+      doc.setFillColor(248,244,225);doc.rect(M,y,CW,sH,'F');
+      doc.setFillColor(122,84,0);doc.rect(M,y,3,sH,'F');
+      doc.setFont('times','italic');doc.setFontSize(9);doc.setTextColor(80,55,14);
+      doc.text(sLines,M+7,y+5.5);y+=sH+5;
+    }
+
+    var msgs=state.dmMessages||[];
+    if(msgs.length===0){
+      doc.setFont('times','italic');doc.setFontSize(10);doc.setTextColor(120,100,70);
+      doc.text('(no messages)',M+4,y+5);y+=10;
+    } else {
+      msgs.forEach(function(msg,i){
+        var isL=i%2===0;
+        var who=isL?dc1:dc2, match=isL?pm1:pm2;
+        var msgLines=doc.splitTextToSize(msg,CW*0.75-8);
+        var rh=msgLines.length*4.8+10;
+        chk(rh+4);
+        var bx=isL?M:M+CW*0.25;
+        if(isL){doc.setFillColor(245,224,224);}else{doc.setFillColor(224,232,242);}
+        doc.roundedRect(bx,y,CW*0.75,rh,2,2,'F');
+        doc.setFont('times','bold');doc.setFontSize(7.5);
+        doc.setTextColor(isL?107:13,isL?16:27,isL?16:62);
+        doc.text((who?who.name:'')+(match?' · as '+match:''),bx+4,y+4.5);
+        doc.setFont('times','normal');doc.setFontSize(9.5);doc.setTextColor(21,8,0);
+        doc.text(msgLines,bx+4,y+9);
+        y+=rh+3;
+      });
+    }
+
+    // Footers
+    var tp=doc.internal.getNumberOfPages();
+    for(var p=1;p<=tp;p++){
+      doc.setPage(p);
+      doc.setFillColor(21,8,0);doc.rect(0,PH-8,PW,8,'F');
+      doc.setFont('times','italic');doc.setFontSize(7.5);doc.setTextColor(160,140,100);
+      doc.text('Romeo & Juliet — Pre-Reading Character Bracket — '+state.name,PW/2,PH-3,{align:'center'});
+      doc.text(p+' / '+tp,PW-M,PH-3,{align:'right'});
+    }
+
+    var fname='RomeoJuliet-Bracket-'+state.name.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\-]/g,'')+'.pdf';
+    doc.save(fname);
+    if(btn){
+      btn.innerHTML='✓ &nbsp;Downloaded — submit as directed';
+      btn.style.background='linear-gradient(170deg,#2E5E3E,#3A7A50)';
+      setTimeout(function(){btn.innerHTML='📜 &nbsp;Download My Scroll as PDF';btn.style.background='';btn.disabled=false;},4000);
+    }
+  }catch(err){
+    console.error(err);
+    alert('Alas — the scroll could not be created. Please try once more.');
+    if(btn){btn.textContent='📜 Download My Scroll as PDF';btn.disabled=false;}
+  }
+}
+
+// ╔══════════════════════════════════════╗
+//   WARNING MODAL
+// ╚══════════════════════════════════════╝
+function showWarningModal(){
+  var name=state.name.trim();
+  var overlay=document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML=
+    '<div class="modal-box">'+
+    '<span class="corner corner-tl">❧</span><span class="corner corner-tr">❧</span>'+
+    '<div style="text-align:center;margin-bottom:20px;">'+
+    '<div style="font-size:28px;color:var(--blood);margin-bottom:8px;">⚔</div>'+
+    '<div style="font-family:\'Cinzel Decorative\',serif;font-size:18px;font-weight:700;'+
+    'color:var(--ink);margin-bottom:8px;">Hark, '+esc(name)+'</div>'+
+    '<div style="width:40px;height:2px;background:var(--blood);margin:0 auto;"></div>'+
+    '</div>'+
+    '<p style="font-size:14px;line-height:1.9;color:var(--ink-mid);margin-bottom:10px;">'+
+    'This assignment will take some time to complete, and <strong>there is no pausing progress</strong> '+
+    'once thou dost begin. If thou dost close this page or navigate away, thy work will be lost.</p>'+
+    '<p style="font-size:14px;line-height:1.9;color:var(--ink-mid);margin-bottom:4px;">'+
+    'Please ensure thou hast <strong>30–60 minutes available right now</strong> before continuing.</p>'+
+    '<label class="modal-check-row" for="readyCheck">'+
+    '<input type="checkbox" id="readyCheck">'+
+    '<span class="modal-check-label">I, <strong>'+esc(name)+'</strong>, confirm that I have '+
+    'at least 30–60 minutes available right now, and I understand that there is '+
+    '<strong>no pausing</strong> once I begin.</span>'+
+    '</label>'+
+    '<button class="btn-main" id="modalBeginBtn" disabled>Begin the Assignment &nbsp; ⚔</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+  document.getElementById('readyCheck').addEventListener('change',function(e){
+    document.getElementById('modalBeginBtn').disabled=!e.target.checked;
+  });
+  document.getElementById('modalBeginBtn').addEventListener('click',function(){
+    overlay.remove();
+    totalTimeStart=Date.now();
+    totalTimeElapsed=0;
+    transition(function(){state.phase='intro';});
+  });
+}
+
+render();
+</script>
+</body>
+</html>
